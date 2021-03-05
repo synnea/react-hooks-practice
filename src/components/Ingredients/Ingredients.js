@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
@@ -7,18 +7,35 @@ import Search from './Search';
 // both this syntax and arrow functions are valid for functional components
 
 function Ingredients() {
-  const [ userIngredients, setUserIngredients ] = useState([]);
+  const [userIngredients, setUserIngredients] = useState([]);
 
-  const addIngredientHandler = ingredient => {
-    setUserIngredients(prevIngredients => 
-            [...prevIngredients, 
-            { id: Math.random().toString(), ...ingredient }
-          ]);
-  }
+  const filteredIngredientsHandler = useCallback((filteredIngredients) => {
+    setUserIngredients(filteredIngredients);
+  }, []);
 
-  const removeIngredientHandler = id => {
-    setUserIngredients(prevIngredients =>
-      prevIngredients.filter(ingredient => ingredient.id !== id)
+  const addIngredientHandler = (ingredient) => {
+    fetch(
+      'https://hooks-practice-631f3-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json',
+      {
+        method: 'POST',
+        body: JSON.stringify(ingredient),
+        header: { 'Content-Type': 'application/jsoin' },
+      }
+    )
+      .then((response) => {
+        return response.json().then();
+      })
+      .then((responseData) => {
+        setUserIngredients((prevIngredients) => [
+          ...prevIngredients,
+          { id: responseData.name, ...ingredient },
+        ]);
+      });
+  };
+
+  const removeIngredientHandler = (id) => {
+    setUserIngredients((prevIngredients) =>
+      prevIngredients.filter((ingredient) => ingredient.id !== id)
     );
   };
 
@@ -27,8 +44,11 @@ function Ingredients() {
       <IngredientForm onAddIngredient={addIngredientHandler} />
 
       <section>
-        <Search />
-        <IngredientList ingredients={userIngredients} onRemoveItem={removeIngredientHandler} />
+        <Search onLoadIngredients={filteredIngredientsHandler} />
+        <IngredientList
+          ingredients={userIngredients}
+          onRemoveItem={removeIngredientHandler}
+        />
       </section>
     </div>
   );
