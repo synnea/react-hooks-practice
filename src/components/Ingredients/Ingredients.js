@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useState, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback } from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
@@ -18,13 +18,33 @@ const ingredientReducer = (currentIngredients, action) => {
   }
 };
 
+const httpReducer = (curhttpState, action) => {
+  switch (action.type) {
+    case 'SEND':
+      return { loading: true, error: null };
+    case 'RESPONSE':
+      return { ...curhttpState, loading: false };
+    case 'ERROR':
+      return { loading: false, error: action.errorMessage };
+    case 'CLEAR':
+      return { ...curhttpState, error: null };
+    default:
+      throw new Error('Should not be reached!');
+  }
+};
 // both this syntax and arrow functions are valid for functional components
 
 function Ingredients() {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
+
+  const [httpState, dispatchHttp] = useReducer(httpReducer, {
+    loading: false,
+    error: null,
+  });
+
   // const [userIngredients, setUserIngredients] = useState([]);
-  const [isLoading, setisLoading] = useState(false);
-  const [error, setError] = useState();
+  // const [isLoading, setisLoading] = useState(false);
+  // const [error, setError] = useState();
 
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
     // setUserIngredients(filteredIngredients);
@@ -32,7 +52,7 @@ function Ingredients() {
   }, []);
 
   const addIngredientHandler = (ingredient) => {
-    setisLoading(true);
+    dispatchHttp({ type: 'SEND' });
     fetch(
       'https://hooks-practice-631f3-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json',
       {
@@ -42,7 +62,7 @@ function Ingredients() {
       }
     )
       .then((response) => {
-        setisLoading(false);
+        dispatchHttp({ type: 'RESPONSE' });
         return response.json().then();
       })
       .then((responseData) => {
@@ -58,7 +78,7 @@ function Ingredients() {
   };
 
   const removeIngredientHandler = (id) => {
-    setisLoading(true);
+    dispatchHttp({ type: 'SEND' });
     fetch(
       `https://hooks-practice-631f3-default-rtdb.europe-west1.firebasedatabase.app/ingredients/${id}.json`,
       {
@@ -66,28 +86,29 @@ function Ingredients() {
       }
     )
       .then((response) => {
-        setisLoading(false);
+        dispatchHttp({ type: 'RESPONSE' });
         // setUserIngredients((prevIngredients) =>
         //   prevIngredients.filter((ingredient) => ingredient.id !== id)
         // );
         dispatch({ type: 'DELETE', id: ingredientId });
       })
       .catch((error) => {
-        setError('Something went wrong!');
-        setIsLoading(false);
+        dispatchHttp({ type: 'ERROR', errorMessage: 'Something went wrong' });
       });
   };
 
   const clearError = () => {
-    setError(null);
+    dispatchHttp({ type: 'CLEAR' });
   };
 
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {httpState.error && (
+        <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>
+      )}
       <IngredientForm
         onAddIngredient={addIngredientHandler}
-        loading={isLoading}
+        loading={httpState.loading}
       />
 
       <section>
