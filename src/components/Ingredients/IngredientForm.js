@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 
 import Card from '../UI/Card';
+import LoadingIndicator from '../UI/LoadingIndicator';
 import './IngredientForm.css';
 
-const IngredientForm = React.memo(props => {
-
+const IngredientForm = React.memo((props) => {
   // you can use multiple states with hooks
   // always use hooks on the root level
   // you can only use hooks in functional components or other hooks
@@ -12,9 +12,9 @@ const IngredientForm = React.memo(props => {
   const [enteredTitle, setEnteredTitle] = useState('');
   const [enteredAmount, setEnteredAmount] = useState('');
 
-  const submitHandler = event => {
+  const submitHandler = (event) => {
     event.preventDefault();
-    props.onAddIngredient({title: enteredTitle, amount: enteredAmount});
+    props.onAddIngredient({ title: enteredTitle, amount: enteredAmount });
   };
 
   return (
@@ -24,27 +24,30 @@ const IngredientForm = React.memo(props => {
           <div className="form-control">
             <label htmlFor="title">Name</label>
 
-            <input type="text" id="title" 
-              value={enteredTitle} 
-              onChange={event => {
+            <input
+              type="text"
+              id="title"
+              value={enteredTitle}
+              onChange={(event) => {
                 setEnteredTitle(event.target.value);
-            }
-            } 
+              }}
             />
           </div>
 
           <div className="form-control">
             <label htmlFor="amount">Amount</label>
-            <input type="number" id="amount" 
+            <input
+              type="number"
+              id="amount"
               value={enteredAmount}
-              onChange={event => {
+              onChange={(event) => {
                 setEnteredAmount(event.target.value);
-                  }} 
-             />
-
+              }}
+            />
           </div>
           <div className="ingredient-form__actions">
             <button type="submit">Add Ingredient</button>
+            {props.loading && <LoadingIndicator />}
           </div>
         </form>
       </Card>

@@ -8,8 +8,13 @@ const Search = React.memo((props) => {
   const [enteredFilter, setEnteredFilter] = useState('');
   const inputRef = useRef();
 
+  // useEffect functions can return values, but they have to be functions
+  // typically clean up functions
+  // If you have [] as dependenies, the cleanup function runs when the
+  // component gets unmounted.
+
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       if (enteredFilter === inputRef.current.value) {
         const query =
           enteredFilter.length === 0
@@ -34,6 +39,9 @@ const Search = React.memo((props) => {
           });
       }
     }, 500);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [enteredFilter, onLoadedIngredients, inputRef]);
 
   return (

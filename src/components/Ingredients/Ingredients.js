@@ -8,12 +8,14 @@ import Search from './Search';
 
 function Ingredients() {
   const [userIngredients, setUserIngredients] = useState([]);
+  const [isLoading, setisLoading] = useState(false);
 
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
     setUserIngredients(filteredIngredients);
   }, []);
 
   const addIngredientHandler = (ingredient) => {
+    setisLoading(true);
     fetch(
       'https://hooks-practice-631f3-default-rtdb.europe-west1.firebasedatabase.app/ingredients.json',
       {
@@ -23,6 +25,7 @@ function Ingredients() {
       }
     )
       .then((response) => {
+        setisLoading(false);
         return response.json().then();
       })
       .then((responseData) => {
@@ -34,14 +37,26 @@ function Ingredients() {
   };
 
   const removeIngredientHandler = (id) => {
-    setUserIngredients((prevIngredients) =>
-      prevIngredients.filter((ingredient) => ingredient.id !== id)
-    );
+    setisLoading(true);
+    fetch(
+      `https://hooks-practice-631f3-default-rtdb.europe-west1.firebasedatabase.app/ingredients/${id}.json`,
+      {
+        method: 'DELETE',
+      }
+    ).then((response) => {
+      setisLoading(false);
+      setUserIngredients((prevIngredients) =>
+        prevIngredients.filter((ingredient) => ingredient.id !== id)
+      );
+    });
   };
 
   return (
     <div className="App">
-      <IngredientForm onAddIngredient={addIngredientHandler} />
+      <IngredientForm
+        onAddIngredient={addIngredientHandler}
+        loading={isLoading}
+      />
 
       <section>
         <Search onLoadIngredients={filteredIngredientsHandler} />
